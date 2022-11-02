@@ -15,7 +15,7 @@ model User {
   username  String    @unique
   name      String?   @default("Anonymous")
   photo     String?
-  password  String    
+  password  String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]
@@ -29,7 +29,7 @@ model Product {
   category    ProductCategory
   status      ProductStatus
   upvotes     Int
-  user        User            @relation(fields: [userId], references: [id])
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -53,9 +53,9 @@ enum ProductStatus {
 model Comment {
   id        String   @id @default(uuid())
   content   String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

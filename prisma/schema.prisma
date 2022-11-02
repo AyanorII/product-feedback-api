@@ -15,6 +15,7 @@ model User {
   username  String    @unique
   name      String?   @default("Anonymous")
   photo     String?
+  password  String    
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]

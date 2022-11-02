@@ -11,9 +11,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
+  id        String    @id @default(uuid())
+  username  String    @unique
   name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  title       String
+  description String
+  category    ProductCategory
+  status      ProductStatus
+  upvotes     Int
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+enum ProductCategory {
+  UI
+  UX
+  ENHANCEMENT
+  BUG
+  FEATURE
+}
+
+enum ProductStatus {
+  PLANNED
+  LIVE
+  IN_PROGRESS
 }

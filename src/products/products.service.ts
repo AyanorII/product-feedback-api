@@ -38,7 +38,20 @@ export class ProductsService {
 
   async findOne(id: string): Promise<Product> {
     try {
-      const product = await this.prisma.product.findUnique({ where: { id } });
+      const product = await this.prisma.product.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              photo: true,
+              name: true,
+            },
+          },
+        },
+      });
+
       return product;
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {

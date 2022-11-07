@@ -31,7 +31,29 @@ export class CommentsService {
 
   async findOne(id: string): Promise<Comment> {
     try {
-      const comment = await this.prisma.comment.findUnique({ where: { id } });
+      const comment = await this.prisma.comment.findUnique({
+        where: { id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              photo: true,
+              name: true,
+            },
+          },
+          product: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              category: true,
+              status: true,
+              upvotes: true,
+            },
+          },
+        },
+      });
 
       return comment;
     } catch (error) {

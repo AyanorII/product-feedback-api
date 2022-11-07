@@ -48,6 +48,7 @@ enum ProductStatus {
   PLANNED
   LIVE
   IN_PROGRESS
+  SUGGESTION
 }
 
 model Comment {

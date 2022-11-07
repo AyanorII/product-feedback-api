@@ -39,13 +39,13 @@ describe('UsersService', () => {
   });
 
   describe('createUser', () => {
-    beforeEach(async () => {
-      await prismaService.cleanDatabase();
-    });
+    // beforeEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
 
-    afterEach(async () => {
-      await prismaService.cleanDatabase();
-    });
+    // afterEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
 
     it('should create a user', async () => {
       const [user1, user2] = users;
@@ -91,14 +91,14 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findUser', () => {
-    beforeEach(async () => {
-      await prismaService.cleanDatabase();
-    });
+  describe('findUserByUsername', () => {
+    // beforeEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
 
-    afterEach(async () => {
-      await prismaService.cleanDatabase();
-    });
+    // afterEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
 
     it('should find a user by the username', async () => {
       const [alice] = users;
@@ -109,9 +109,39 @@ describe('UsersService', () => {
       ).toHaveProperty('id');
     });
 
-    it('should throw a ConflictException if no user was found', async () => {
+    it('should throw a ConflictException if no user was found using username', async () => {
       try {
         await usersService.findUserByUsername('nonExistingUser');
+      } catch (err) {
+        expect(err).toBeInstanceOf(NotFoundException);
+      }
+    });
+  });
+
+  describe('findUserById', () => {
+    // beforeEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
+
+    // afterEach(async () => {
+    //   await prismaService.cleanDatabase();
+    // });
+
+    it('should find a user by their ID', async () => {
+      const [alice] = users;
+      const createdUser = await usersService.createUser(alice);
+
+      try {
+        const foundUser = await usersService.findUserById(createdUser.id);
+        expect(foundUser).toHaveProperty('id');
+      } catch (err) {
+        expect(err).not.toBeInstanceOf(NotFoundException);
+      }
+    });
+
+    it('should throw a NotFoundException if no user was found.', async () => {
+      try {
+        await usersService.findUserById('nonExistingId');
       } catch (err) {
         expect(err).toBeInstanceOf(NotFoundException);
       }

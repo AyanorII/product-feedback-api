@@ -43,7 +43,7 @@ export class ProductsService {
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === 'P2025') {
-          throw new NotFoundException('Product not found');
+          throw new NotFoundException(`Product with ID: '${id}' not found`);
         }
       }
     }

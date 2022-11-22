@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from '@prisma/client';
+import { Product, ProductStatus } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
@@ -33,33 +33,62 @@ export class ProductsService {
   }
 
   async findAll(): Promise<Product[]> {
-    return this.prisma.product.findMany();
+    return this.prisma.product.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            photo: true,
+            name: true,
+          },
+        },
+        comments: true,
+      },
+    });
   }
 
   async findOne(id: string): Promise<Product> {
-    try {
-      const product = await this.prisma.product.findUnique({
-        where: { id },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              photo: true,
-              name: true,
+    const options = {
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            photo: true,
+            name: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            user: {
+              select: {
+                id: true,
+                username: true,
+                photo: true,
+                name: true,
+              },
             },
           },
         },
-      });
+      },
+    };
 
-      return product;
-    } catch (err) {
-      if (err instanceof PrismaClientKnownRequestError) {
-        if (err.code === 'P2025') {
-          throw new NotFoundException(`Product with ID: '${id}' not found`);
-        }
-      }
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      ...options,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with id: '${id}' not found`);
     }
+
+    return product;
   }
 
   async update(
@@ -77,5 +106,100 @@ export class ProductsService {
   async remove(id: string): Promise<void> {
     await this.findOne(id);
     await this.prisma.product.delete({ where: { id } });
+  }
+
+  async plannedProducts(): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: {
+        status: 'PLANNED',
+      },
+    });
+  }
+
+  async inProgressProducts(): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: {
+        status: 'IN_PROGRESS',
+      },
+    });
+  }
+
+  async liveProducts(): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: {
+        status: 'LIVE',
+      },
+    });
+  }
+
+  async countProducts(): Promise<{
+    planned: number;
+    inProgress: number;
+    live: number;
+    suggestion: number;
+  }> {
+    const plannedCount = await this.#getProductsCountByStatus(
+      ProductStatus.PLANNED,
+    );
+
+    const inProgressCount = await this.#getProductsCountByStatus(
+      ProductStatus.IN_PROGRESS,
+    );
+
+    const liveCount = await this.#getProductsCountByStatus(ProductStatus.LIVE);
+
+    const suggestionCount = await this.#getProductsCountByStatus(
+      ProductStatus.SUGGESTION,
+    );
+
+    return {
+      planned: plannedCount,
+      inProgress: inProgressCount,
+      live: liveCount,
+      suggestion: suggestionCount,
+    };
+  }
+
+  async productsSuggestions(): Promise<Product[]> {
+    const suggestions = await this.prisma.product.findMany({
+      where: {
+        status: 'SUGGESTION',
+      },
+    });
+
+    return suggestions;
+  }
+
+  async upvote(id: string): Promise<Product> {
+    try {
+      const product = this.prisma.product.update({
+        where: {
+          id,
+        },
+        data: {
+          upvotes: {
+            increment: 1,
+          },
+        },
+      });
+
+      return product;
+    } catch (err) {
+      if (err instanceof PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw new NotFoundException(`Product with ID: '${id}' not found!`);
+        }
+      }
+    }
+  }
+
+  /* ---------------------------- Private methods --------------------------- */
+
+  async #getProductsCountByStatus(status: ProductStatus) {
+    return this.prisma.product.count({
+      where: {
+        status,
+      },
+    });
   }
 }

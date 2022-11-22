@@ -19,7 +19,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]
-  Comment   Comment[]
+  comments  Comment[]
 }
 
 model Product {
@@ -33,7 +33,7 @@ model Product {
   userId      String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  Comment     Comment[]
+  comments    Comment[]
 }
 
 enum ProductCategory {

@@ -29,14 +29,48 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Get('/planned')
+  plannedProducts() {
+    return this.productsService.plannedProducts();
+  }
+
+  @Get('/in-progress')
+  inProgressProducts() {
+    return this.productsService.inProgressProducts();
+  }
+
+  @Get('/live')
+  liveProducts() {
+    return this.productsService.liveProducts();
+  }
+
+  @Get('/count')
+  async countProducts(): Promise<{
+    planned: number;
+    inProgress: number;
+    live: number;
+  }> {
+    return this.productsService.countProducts();
+  }
+
+  @Get('/suggestions')
+  productsSuggestions() {
+    return this.productsService.productsSuggestions();
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.update(id, updateProductDto);
+  }
+
+  @Patch(':id/upvote')
+  async upvote(@Param('id') id: string) {
+    return this.productsService.upvote(id);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
